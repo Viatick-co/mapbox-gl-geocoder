@@ -17,8 +17,10 @@ test('geocoder', function(tt) {
 
   function setup(opts) {
     opts = opts || {};
+    opts.mapboxgl = mapboxgl;
     opts.accessToken = mapboxgl.accessToken;
     opts.enableEventLogging = false;
+    opts.origin = "eu1.locationiq.com";
     container = document.createElement('div');
     map = new mapboxgl.Map({ container: container });
     geocoder = new MapboxGeocoder(opts);
@@ -38,11 +40,12 @@ test('geocoder', function(tt) {
   tt.test('set/get input', function(t) {
     t.plan(4)
     setup({ proximity: { longitude: -79.45, latitude: 43.65 } });
-    geocoder.query('Queen Street');
+    geocoder.query("China 100001");
     var mapMoveSpy = sinon.spy(map, "flyTo");
     geocoder.on(
       'result',
       once(function(e) {
+        console.log('e', e);
         t.ok(e.result, 'feature is in the event object');
         var mapMoveArgs = mapMoveSpy.args[0][0];
         t.ok(mapMoveSpy.calledOnce, 'the map#flyTo method was called when a result was selected');
@@ -650,7 +653,7 @@ test('geocoder', function(tt) {
     geocoder.query('high');
     geocoder.on(
       'result',
-      once(function() {  
+      once(function() {
         t.ok(markerConstructorSpy.calledOnce, "a new marker is added to the map");
         var calledWithOptions = markerConstructorSpy.args[0][0];
         t.equals(calledWithOptions.color, '#4668F2', 'a default color is set');
@@ -675,7 +678,7 @@ test('geocoder', function(tt) {
     geocoder.query('high');
     geocoder.on(
       'result',
-      once(function() {  
+      once(function() {
         t.ok(markerConstructorSpy.calledOnce, "a new marker is added to the map");
         var calledWithOptions = markerConstructorSpy.args[0][0];
         t.equals(calledWithOptions.color, 'purple', "sets the correct color property");
@@ -697,7 +700,7 @@ test('geocoder', function(tt) {
     geocoder.query('high');
     geocoder.on(
       'result',
-      once(function() {  
+      once(function() {
         t.ok(markerConstructorSpy.notCalled, "a new marker is not added to the map");
         markerConstructorSpy.restore();
       })
@@ -859,7 +862,7 @@ test('geocoder', function(tt) {
     geocoder.query('high');
     geocoder.on(
       'result',
-      once(function() {  
+      once(function() {
         t.notEqual(geocoder._typeahead.data.length, 0, 'the suggestions menu has some options in it after a query');
         geocoder._renderMessage("<h1>This is a test</h1>");
         t.equals(geocoder._typeahead.data.length, 0, 'the data was cleared from the suggestions');
@@ -879,7 +882,7 @@ test('geocoder', function(tt) {
     geocoder.query('high');
     geocoder.on(
       'result',
-      once(function() {  
+      once(function() {
         geocoder._renderError();
         t.ok(renderMessageSpy.calledOnce, 'the error render method calls the renderMessage method exactly once');
         var calledWithArgs = renderMessageSpy.args[0][0];
@@ -896,7 +899,7 @@ test('geocoder', function(tt) {
     geocoder.query('high');
     geocoder.on(
       'result',
-      once(function() {  
+      once(function() {
         geocoder._renderNoResults();
         t.ok(renderMessageSpy.calledOnce, 'the no results render method calls the renderMessage method exactly once');
         var calledWithArgs = renderMessageSpy.args[0][0];
@@ -913,7 +916,7 @@ test('geocoder', function(tt) {
     geocoder.query('12,'); //this will cause a 422 error
     geocoder.on(
       'error',
-      once(function() {  
+      once(function() {
         t.ok(renderMessageSpy.calledOnce, 'an error was rendered');
         var calledWithArgs = renderMessageSpy.args[0][0];
         t.ok(calledWithArgs.indexOf('mapbox-gl-geocoder--error') > -1, 'the info message specifies the correct class');
@@ -935,7 +938,7 @@ test('geocoder', function(tt) {
     geocoder.query('12,'); //this will cause a 422 error
     geocoder.on(
       'error',
-      once(function() {  
+      once(function() {
         t.notOk(renderErrorSpy.called, 'the error message is not rendered when the local geocoder returns successfully')
         t.end();
       })
@@ -948,7 +951,7 @@ test('geocoder', function(tt) {
     geocoder.query('abcdefghijkl'); //this will return no results
     geocoder.on(
       'results',
-      once(function() {  
+      once(function() {
         t.ok(renderMessageSpy.called, 'a message was rendered');
         t.end();
       })
@@ -975,7 +978,7 @@ test('geocoder', function(tt) {
     geocoder.query('Golden Gate Bridge');
     geocoder.on(
       'results',
-      once(function(e) {  
+      once(function(e) {
         t.ok(
           e.features[0].place_name == "Golden Gate Bridge",
           'returns the result of the local geocoder'
